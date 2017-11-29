@@ -1,19 +1,21 @@
 
 set core_name [lindex $argv 0]
-
 set part_name [lindex $argv 1]
+
+global env
+set srcdir       $env(srcdir)
+set top_srcdir   $env(top_srcdir)
+set builddir     $env(OUTDIR)
 
 set elements [split $core_name _]
 set project_name [join [lrange $elements 0 end-2] _]
 set version [string trimleft [join [lrange $elements end-1 end] .] v]
 
-file delete -force tmp/cores/$core_name tmp/cores/$project_name.cache tmp/cores/$project_name.hw tmp/cores/$project_name.xpr
+file delete -force $builddir/cores/$core_name $builddir/cores/$project_name.cache $builddir/cores/$project_name.hw $builddir/cores/$project_name.xpr
 
-create_project -part $part_name $project_name tmp/cores
-
-add_files -norecurse [glob cores/$core_name/*.v]
-
-ipx::package_project -import_files -root_dir tmp/cores/$core_name
+create_project -part $part_name $project_name $builddir/cores
+add_files -norecurse [glob $srcdir/cores/$core_name/*.v]
+ipx::package_project -import_files -root_dir $builddir/cores/$core_name
 
 set core [ipx::current_core]
 
@@ -37,7 +39,7 @@ proc core_parameter {name display_name description} {
   set_property TOOLTIP $description $parameter
 }
 
-source cores/$core_name/core_config.tcl
+source $srcdir/cores/$core_name/core_config.tcl
 
 rename core_parameter {}
 
